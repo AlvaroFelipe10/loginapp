@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { User } from '../user';
+import { AuthService } from '../auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -24,7 +28,12 @@ export class RegisterComponent implements OnInit {
 
   states = ["MG", "RS", "SC", "GO", "PR", "SP"];
 
-  constructor(private fb: FormBuilder){
+  constructor(
+      private fb: FormBuilder,
+      private authService: AuthService,
+      private snackBar: MatSnackBar,
+      private router: Router
+      ){
 
   }
 
@@ -43,7 +52,23 @@ export class RegisterComponent implements OnInit {
     return {matching: false};
   }
 
-  onSubmit(){
+  onSubmit() {
     console.log(this.formRegister.value);
+    let u: User = {
+      ...this.formRegister.value,
+      password: this.formRegister.value.password1};
+    this.authService.register(u)
+      .subscribe(
+        (u) => {
+          this.snackBar.open(
+            'Successfuly registered. Use your credentials to sing in',
+            'OK', {duration: 2000});
+          this.router.navigateByUrl('/auth/login');
+        },
+        (err) => {
+          console.error(err);
+          this.snackBar.open(err.error.message,'OK', {duration: 2000});
+        }
+      )
   }
 }
